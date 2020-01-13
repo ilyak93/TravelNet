@@ -1,10 +1,9 @@
-import React, { Component } from 'react'
-import DatePicker from "react-datepicker"
+import React, { Component } from "react";
+import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Alert from "reactstrap/es/Alert";
 import axios from "axios";
-import Map from "./Map";
-import L from 'leaflet';
+import L from "leaflet";
 /*
 export const register = newUser => {
   return axios
@@ -159,20 +158,26 @@ class TravelPartners extends Component {
  */
 
 const style = {
-  width: "30%",
-  height: "100px"
+  width: "75%",
+  height: "500px",
+  display: "flex",
+  marginBottom: "0px",
+  marginLeft: "150px",
+  marginRight: "0px",
+  marginTop: "50px"
 };
 
 class TravelPartners extends Component {
   componentDidMount() {
     // create map
-    this.map = L.map('map', {
+    this.map = L.map("map", {
       center: [49.8419, 24.0315],
       zoom: 16,
       layers: [
-        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-        }),
+        L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
+          attribution:
+            '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        })
       ]
     });
   }
@@ -182,5 +187,4 @@ class TravelPartners extends Component {
   }
 }
 
-export default TravelPartners
-
+export default TravelPartners;
