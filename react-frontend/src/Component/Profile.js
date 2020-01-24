@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
-
-import { Nav, NavItem, NavLink } from 'reactstrap';
+import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
+import ToggleButton from 'react-bootstrap/ToggleButton'
+import { Nav, NavItem, NavLink,ButtonGroup } from 'reactstrap';
 import axios from "axios";
 import {About} from "./About";
 import {Users} from "./Users";
+import {Post} from "./Post";
 
 import Button from "react-bootstrap/Button";
 import jwt_decode from "jwt-decode";
@@ -14,7 +16,7 @@ export class Profile extends Component{
         username: '',
         email: '',
         image_file: '',
-        postsFlag: 1,
+        postsFlag: 0,
         aboutFlag:0,
         followingFlag:0,
         followersFlag:0,
@@ -60,8 +62,9 @@ export class Profile extends Component{
               const decoded = jwt_decode(token);
               this.setState({
                   current_user: decoded.identity.id
-              });
-          }
+              },()=>{console.log('user load')});
+          }//TODO: maybe everything in callback
+        axios.defaults.withCredentials = true;
         axios.get('http://127.0.0.1:5000/users/' + this.props.match.params.id).then((response) => {
                 this.setState({
                    username: response.data.username,
@@ -131,25 +134,43 @@ export class Profile extends Component{
         });
 
    }
+   delete(){
+        axios.defaults.withCredentials = true;
+        axios.delete('http://127.0.0.1:5000/users/' + this.props.match.params.id).then((response) => {
+            if(response.data ==='Deleted'){
+                console.log("deleting");
+                localStorage.removeItem('usertoken')
+                this.props.history.push(`/`)
+            }
+   }
+   ).catch(err=>console.log(err))
+    }
    updateMenuPic(info){
+        console.log(info);
         this.setState({
-              image_file: info.image_file,
+              image_file: "/static/pictures/"+info.image_file,
         });
+        console.log("updated pic" + info.image_file);
 
    }
     render(){
-        return( <div>
+        return( <div><br></br><br></br>
+                 <br></br><br></br>
+                <div className="jumbotron mt-1 " style={{width:"50%" ,margin:"auto",backgroundColor:"rgba(100,100,100,0.6)"}}>
                     <div className="jumbotron-fluid mt-5" >
                       <div className="text-center">
                           <div className="media">
                                       <div className="media-body">
-                                          <img className="center" className="rounded-circle account-img"
-                                               src={"http://127.0.0.1:5000" + this.state.image_file}
+                                          {this.state.image_file.length > 0 && <img className="center" className="rounded-circle account-img"
+                                               src={"http://127.0.0.1:5000" + this.state.image_file + "?" + (new Date()).toString()}
                                                height="200" width="200"
-                                          />
-                                          <h1 className="account-heading">{this.state.username}</h1>
-                                          <p className="text-secondary">{this.state.email}   {(this.state.current_user != this.props.match.params.id) && this.state.isFollowingMe &&
-                                                   <h5><Badge pill variant="secondary">Follows you</Badge></h5>}</p>
+                                          />}<br/><br/>
+                                          <div style={{backgroundColor:"rgba(255,255,255,1)", width:"50%",margin:"auto",border:" 2px solid coral"}}>
+                                          <h1 className="account-heading" >{this.state.username}</h1>
+                                          <p className="text-secondary">{this.state.email}
+
+                                          {(this.state.current_user != this.props.match.params.id) && this.state.isFollowingMe &&
+                                          <h5><Badge pill variant="secondary">Follows you</Badge></h5>}</p></div>
                                                {(this.state.current_user != this.props.match.params.id) && <Button
                                                   variant="outline-primary"
                                                   onClick={this.state.isFollowing ? this.unfollowUser.bind(this) : this.followUser.bind(this)}
@@ -161,21 +182,55 @@ export class Profile extends Component{
                       </div>
                     </div>
                     </div>
-                    <Nav tabs>
-                          <NavItem>
-                            <NavLink
-                                href="#"
-                                onClick= {this.showAbout.bind(this)}>
-                                About Me
-                            </NavLink>
-                          </NavItem>
-                        </Nav>
+                </div>
 
-            {this.state.aboutFlag ? <About id ={this.props.match.params.id} updateInfo={this.updateMenuInfo.bind(this)}
+
+
+                <br></br><br></br>
+                <br></br><br></br>
+
+                <div className="nav justify-content-center ">
+
+            {(this.state.isFollowing || this.state.current_user==this.props.match.params.id) &&
+                          <Button variant="success" className="btn mr-3" onClick= {this.showAbout.bind(this)}
+                          >
+                                About Me
+                          </Button>
+                          }{" "}
+                {(this.state.isFollowing || this.state.current_user==this.props.match.params.id)&&
+                          <Button className="btn mr-3" onClick= {this.showFollowing.bind(this)}
+                          >
+                                following
+                          </Button>}{"    "}
+                {this.state.current_user==this.props.match.params.id &&
+                <Button variant="danger" className="btn mr-3" onClick= {this.delete.bind(this)}
+                          >
+                                delete
+                          </Button>}{"   "}
+                          {(this.state.isFollowing || this.state.current_user==this.props.match.params.id) &&
+                               <Button className="btn mr-3" onClick= {this.showFollowers.bind(this)}>
+                                   folllowers
+                               </Button>
+                               }{" "}
+                {this.state.current_user == this.props.match.params.id &&
+                <Button className="btn mr-3" href="/post/new">new post </Button>
+                }
+                {this.state.current_user == this.props.match.params.id &&
+                <Button variant="warning" className="btn mr-3" href="/notifications"><i className='fas fa-bell' style={{fontSize:"22px"}}>  </i> </Button>
+                }
+
+            </div>
+
+
+
+
+
+
+            {this.state.aboutFlag ? <About id ={this.props.match.params.id} updateInfo={this.updateMenuInfo.bind(this)} image_file={this.state.image_file}
                     updatePic={this.updateMenuPic.bind(this)} /> : <br/>}
                 {this.state.followersFlag  ? <Users id ={this.props.match.params.id} type={1} flag={this.state.isFollowing}/> : <br/>}
                 {this.state.followingFlag  ? <Users id ={this.props.match.params.id} type={2} flag={this.state.isFollowing}/> : <br/>}
-
+                {this.state.postsFlag  ? <Post id ={this.props.match.params.id} type={2} flag={this.state.isFollowing}/> : <br/>}
             </div>
 
         )

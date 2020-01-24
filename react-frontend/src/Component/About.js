@@ -22,6 +22,8 @@ const update = updatedUser => {
     })
 }
 
+const default_pic_src = "http://127.0.0.1:5000/static/pictures/default.jpg";
+
 const isChecked = gender =>
 {
   let res=false;
@@ -79,7 +81,10 @@ function ProfileInfo(props){
   );
 }
 
+
+
 function EditProfile(props){
+
   return(
           <div className="col-md-6 mt-3 mx-auto">
      <form noValidate onSubmit={props.onSubmit}>
@@ -167,11 +172,16 @@ function EditProfile(props){
                     <label htmlFor="image_file">Profile Picture</label>
                     <br/>
                     <input
-                        type="file"
-                        onChange={props.onchangeimg}
+                        type="file" name="img" id="pic"
+                        onChange={props.onChangeImg}
                         placeholder="Update your profile picture"
                     />
                 </div>
+                        <img height="200"src={props.previmg}  />
+         { props.previmg!==default_pic_src && <button
+                            type="button" onClick={e=>{document.getElementById("pic").value=null;props.onChangeImg(e)}}>delete picture</button>}
+
+
               <button
                 type="submit"
                 className="btn btn-lg btn-primary btn-block"
@@ -186,7 +196,7 @@ function EditProfile(props){
 
 export class About extends Component {
   constructor() {
-    super()
+    super();
     this.state = {
       current_user: 0,
       username: '',
@@ -206,7 +216,10 @@ export class About extends Component {
       invalid: 0,
       flag: true,
       file: null,
-        path_img:''
+        path_img:'',
+        img_loading:false,
+        submitted:false,
+        previmg:null
     }
     this.onChange = this.onChange.bind(this)
     this.onChangeImg = this.onChangeImg.bind(this)
@@ -224,16 +237,18 @@ export class About extends Component {
 
         axios.get('http://127.0.0.1:5000/users/' + this.props.id).then((response) => {
                 this.setState({
-                   username: response.data.username,
+                  username: response.data.username,
                   first_name: response.data.first_name,
                   last_name: response.data.last_name,
                   gender: response.data.gender,
                   birth_date: response.data.birth_date,
                   email: response.data.email
+
                 })
             }).catch(err => {
                 console.log(err)
             });
+      this.setState({previmg:'http://127.0.0.1:5000'+this.props.image_file + "?" + new Date().toString()});
   }
 
   toggleUpdate(){
@@ -248,7 +263,8 @@ export class About extends Component {
       user_taken: 0,
       email_taken: 0,
       invalid: 0,
-      file:null
+      file:null,
+      img_loading:false
     });
     if (!this.state.flag)
       this.componentDidMount();
@@ -260,7 +276,18 @@ export class About extends Component {
     });
   };
 
+  deletePicture(){
+      axios.defaults.withCredentials = true;
+      axios
+        .delete("http://127.0.0.1:5000/image/profile")
+        .then(res =>
+            {console.log(res.data.image_file);
+                this.props.updatePic({image_file:res.data});
+            })
+      console.log("pic deleted");
+  }
   onChange(e) {
+      console.log("fghxgdd")
       //  e.preventDefault()
         let errors = this.state.errors;
         const { name, value } = e.target;
@@ -297,19 +324,32 @@ export class About extends Component {
         }
         this.setState({errors, [name]: value});
   }
-  onChangeImg(e) {
-    this.setState({file:e.target.files[0]})
-  }
+  onChangeImg = e=> {
+      e.preventDefault();
+      this.setState({img_loading:true})
+       console.log(this.state);
+       if(!e.target.files){
+           this.setState({file:null, previmg:default_pic_src });
+       }
+       else{
+    this.setState({file:e.target.files[0]},()=>{
+        let reader=new FileReader();
+        reader.onloadend = e=>{this.setState({previmg:reader.result})};
+        reader.readAsDataURL(this.state.file);
+    });
+      console.log(e.target.files[0].name);
+      console.log(this.state)
+  }}
   uploadImg(){
       let img = this.state.file;
-      const formData = new FormData();
-      formData.append("file", img);
+      if(!img) return this.deletePicture();
+      console.log(img);
       axios.defaults.withCredentials = true;
       axios
-        .put("http://127.0.0.1:5000/image/"+this.props.id, formData)
+        .post("http://127.0.0.1:5000/image/profile", img,{headers:{'content-type': 'image/png'}})
         .then(res =>
-            {console.log(res.data.image_file)
-                this.props.updatePic({image_file:res.data.image_file});
+            {console.log(res.data.image_file);
+                this.props.updatePic({image_file:res.data});
             }
 
         )
@@ -320,7 +360,8 @@ export class About extends Component {
 
   }
   onSubmit(e) {
-    e.preventDefault()
+      this.setState({submitted:true});
+    e.preventDefault();
     this.setState({invalid: 0});
     this.setState({user_taken: 0});
     this.setState({email_taken: 0});
@@ -333,32 +374,34 @@ export class About extends Component {
       gender: this.state.gender,
       birth_date: this.state.birth_date,
       email: this.state.email,
-    }
+    };
       const info={
         email: this.state.email,
           username: this.state.username
-    }
+    };
 
      if (validateForm(this.state.errors)) {
          update(updatedUser).then(res => {
-             if (res == 'Updated') {
-                 if (this.state.file){
-                     this.uploadImg()
+             if (res === 'Updated') {
+                 if (this.state.img_loading){
+
+                     this.uploadImg();
                      this.props.updateInfo(info);
                  }
                  else
                      {
-                                                console.log("here5");
-
+                         if(!this.state.previmg){
+                             this.deletePicture()
+                         }
                          this.props.updateInfo(info);
                      }
-               this.setState({flag: true, file:null});
+               this.setState({flag: true, file:null,img_loading:false});
              }
-             if (res == 'Username Taken'){
+             if (res === 'Username Taken'){
                  this.setState({user_taken: 1});
                  this.setState({invalid: 1});
              }
-             if (res == 'Email Taken'){
+             if (res === 'Email Taken'){
                  this.setState({email_taken: 1});
                  this.setState({invalid: 1});
              }
@@ -367,6 +410,7 @@ export class About extends Component {
      else{
          this.setState({invalid: 1});
      }
+     console.log("fghxdrxrrewwwwwww");
   }
 
   render() {
@@ -399,8 +443,13 @@ export class About extends Component {
               user_taken={this.state.user_taken}
               email_taken={this.state.email_taken}
               flag={this.state.flag}
+              image_load={this.state.img_loading}
+              submitted={this.state.submitted}
               toggleUpdate={this.toggleUpdate}
-              onchangeimg={this.onChangeImg}
+              onChangeImg={this.onChangeImg}
+              previmg={this.state.previmg}
+              deletepicture={this.deletePicture}
+              file={this.state.file}
             />}
             <div className="col-md-6 mt-1 mx-auto">
             {!this.state.flag && <Button className="btn btn-lg btn-block" color="secondary" onClick={this.toggleUpdate.bind(this)}>Cancel</Button>}

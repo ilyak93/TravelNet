@@ -20,27 +20,45 @@ export class Users extends Component{
     }
 
     refresh_users(page){
-        if (this.props.type == 1) {
+        switch (this.props.type){
+            case 1:
             axios.defaults.withCredentials = true;
             axios.get('http://127.0.0.1:5000/followers/' + this.props.id + "?page=" + page).then((response) => {
                 this.setState({
                     users: response.data.followers,
                     amount: response.data.length
-                })
+                });
+
             }).catch(err => {
                 console.log(err)
             });
-        }
-        else{
+        break;
+            case 2:
              axios.defaults.withCredentials = true;
             axios.get('http://127.0.0.1:5000/following/' + this.props.id + "?page=" + page).then((response) => {
                 this.setState({
+
                     users: response.data.following,
                     amount: response.data.length
-                })
+                });
+
             }).catch(err => {
                 console.log(err)
+            });break;
+            case 3:
+                axios.defaults.withCredentials = true;
+            axios.get('http://127.0.0.1:5000/user/find/' + this.props.searchfor + "?page=" + page).then((response) => {
+                console.log(response.data);
+                this.setState({
+
+                    users: response.data.found,
+                    amount: response.data.length
             });
+
+            }).catch(err => {
+                console.log(err)
+            });break;
+            default:break;
         }
     }
      handlePageClick = data => {
@@ -56,14 +74,16 @@ export class Users extends Component{
     }
 
     render(){
+
+
          let users =  this.state.users.map((user) => {
             return (
-                <div className="col-md-24 mx-auto">
+                <div className="col-md-24 mx-auto" key={user.id}>
               <tr>
                     <td><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></td>
                 <td><img  className="rounded-circle account-img"
-                                               src={"http://127.0.0.1:5000" + user.image_file}
-                                               height="60" width="60"
+                                               src={"http://127.0.0.1:5000/static/pictures/" + user.image_file}
+                                               height={this.props.type === 3 ? "120" :"60" } width={this.props.type === 3 ? "120" :"60" }
                             />  <a href={"/users/"+user.id}>{'     '+user.username}</a></td>
               </tr>
                 </div>

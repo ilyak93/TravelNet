@@ -103,6 +103,7 @@ class Login extends Component {
   render() {
     return (
       <div className="container">
+           <div className="jumbotron mt-1 " style={{width:"90%" ,margin:"auto",backgroundColor:"rgba(100,100,100,0.6)"}}>
         <div className="row">
           <div className="col-md-6 mt-5 mx-auto">
             <form noValidate onSubmit={this.onSubmit}>
@@ -146,6 +147,7 @@ class Login extends Component {
             </form>
           </div>
         </div>
+      </div>
       </div>
     )
   }

@@ -1,7 +1,7 @@
 .error {
   color:#db2269;
   font-size: 0.8em;
-  /* display: relative; */
+  display: relative;
 }
 /*
 .container {
@@ -85,4 +85,9 @@ ul.nav.nav-tabs {
     display: inline-block;
       float: right;
     width: 100%;
+}
+
+
+.container {
+    background-image: url("connectivity.jpg");
 }

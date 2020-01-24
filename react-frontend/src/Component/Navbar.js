@@ -2,10 +2,12 @@ import React, { Component } from 'react'
 import { Link, withRouter } from 'react-router-dom'
 import axios from "axios";
 import jwt_decode from "jwt-decode";
-import Autosuggest from 'react-bootstrap-autosuggest'
 import Form from "react-bootstrap/Form";
 import FormControl from "react-bootstrap/FormControl";
 import Button from "react-bootstrap/Button";
+import pic from "../notf.jpg"
+import AmazingComponent from "./AmazingComponent";
+import ATopLevelComponent from "./ATopLevelComponent";
 class Navbar extends Component {
     state ={
         current_user: 0,
@@ -14,14 +16,10 @@ class Navbar extends Component {
     }
     get_user(){
         this.setState({search_msg:'Search for a user'});
-         axios.defaults.withCredentials = true;
-            axios.get('http://127.0.0.1:5000/user/'+this.state.username).then((response) => {
+        {
+            this.props.history.push(`/search/`+this.state.username);
                 this.setState({username:''});
-                this.props.history.push(`/users/`+response.data.id)
-            }).catch(err => {
-                this.setState({username:'',search_msg:'User not found'});
-
-            });
+            }
     }
 
     onChange(e){
@@ -32,8 +30,9 @@ class Navbar extends Component {
       e.preventDefault()
       axios.defaults.withCredentials = true;
       axios.get('http://127.0.0.1:5000/logout').then(response => {
-          localStorage.removeItem('usertoken')
+          localStorage.removeItem('usertoken');
           this.props.history.push(`/`)
+
       })
         .catch(err => {
           console.log(err)
@@ -78,8 +77,16 @@ class Navbar extends Component {
       <ul className="navbar-nav">
             <li className="nav-item">
               <Link to="/travelpartners" className="nav-link">
-                Travel Partner
+                Travel Partners
               </Link>
+            </li>
+          </ul>
+       )
+
+      const NotificationsLink = (
+      <ul className="navbar-nav">
+            <li className="nav-item">
+                <AmazingComponent/>
             </li>
           </ul>
        )
@@ -112,6 +119,7 @@ class Navbar extends Component {
 
     return (
       <div><nav className="navbar navbar-expand-lg navbar-dark bg-dark rounded">
+         {localStorage.usertoken ? NotificationsLink : ''}
         <button
           className="navbar-toggler"
           type="button"
@@ -141,7 +149,6 @@ class Navbar extends Component {
         </div>
 
       </nav>
-
           </div>
     )
   }
