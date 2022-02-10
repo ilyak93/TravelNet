@@ -10,7 +10,7 @@
     "leaflet": "^1.5.1",
     "leaflet-geosearch": "^2.7.0",
     "moment": "^2.24.0",
-    "node-sass": "^4.13.1",
+    "node-sass": "^7.0.0",
     "react": "^16.9.0",
     "react-activity-feed": "^0.9.26",
     "react-alert": "^6.0.0",
