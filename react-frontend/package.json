@@ -9,7 +9,7 @@
     "jwt-decode": "^2.2.0",
     "leaflet": "^1.5.1",
     "leaflet-geosearch": "^2.7.0",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "node-sass": "^4.13.1",
     "react": "^16.9.0",
     "react-activity-feed": "^0.9.26",
